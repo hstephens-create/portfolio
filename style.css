@@ -20,6 +20,22 @@ body {
   min-height: 100vh;
 }
 
+/* ── Header title ── */
+header {
+  text-align: center;
+  padding: 48px 0 24px;
+}
+
+#admin-trigger {
+  font-size: 1.1rem;
+  font-weight: normal;
+  letter-spacing: 0.3em;
+  text-transform: uppercase;
+  color: var(--text);
+  cursor: default;
+  user-select: none;
+}
+
 /* ── Gallery ── */
 .gallery {
   column-count: 3;
@@ -80,19 +96,6 @@ body {
   text-align: center;
 }
 
-/* ── Footer / hidden trigger ── */
-footer {
-  padding: 24px;
-  text-align: center;
-}
-
-#admin-trigger {
-  color: var(--muted);
-  font-size: 0.7rem;
-  letter-spacing: 0.06em;
-  cursor: default;
-  user-select: none;
-}
 
 /* ── Modals shared ── */
 .modal, .admin-panel, .lightbox {

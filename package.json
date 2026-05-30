@@ -2,9 +2,10 @@
   "name": "portfolio",
   "version": "1.0.0",
   "scripts": {
-    "start": "serve . -p ${PORT:-3000}"
+    "start": "node server.js"
   },
   "dependencies": {
-    "serve": "^14.2.3"
+    "express": "^4.19.2",
+    "pg": "^8.12.0"
   }
 }

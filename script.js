@@ -1,48 +1,56 @@
 (() => {
   const PASSWORD = '0000';
-  const STORAGE_KEY = 'portfolio_photos';
 
   // ── State ──────────────────────────────────────────────
-  let photos = [];     // [{ src, alt }]
+  let photos = [];   // [{ id, src, alt }]
   let lbIndex = 0;
   let triggerClicks = 0;
   let triggerTimer = null;
 
   // ── DOM refs ───────────────────────────────────────────
-  const gallery        = document.getElementById('gallery');
-  const emptyState     = document.getElementById('empty-state');
-  const adminTrigger   = document.getElementById('admin-trigger');
-  const pwModal        = document.getElementById('pw-modal');
-  const pwInput        = document.getElementById('pw-input');
-  const pwSubmit       = document.getElementById('pw-submit');
-  const pwError        = document.getElementById('pw-error');
-  const adminPanel     = document.getElementById('admin-panel');
-  const closeAdmin     = document.getElementById('close-admin');
-  const photoUrl       = document.getElementById('photo-url');
-  const photoAltUrl    = document.getElementById('photo-alt-url');
-  const addUrlBtn      = document.getElementById('add-url-btn');
-  const photoFile      = document.getElementById('photo-file');
-  const photoAltUp     = document.getElementById('photo-alt-upload');
-  const addFileBtn     = document.getElementById('add-file-btn');
-  const thumbList      = document.getElementById('admin-thumb-list');
-  const lightbox       = document.getElementById('lightbox');
-  const lbImg          = document.getElementById('lb-img');
-  const lbCaption      = document.getElementById('lb-caption');
-  const lbClose        = document.getElementById('lb-close');
-  const lbPrev         = document.getElementById('lb-prev');
-  const lbNext         = document.getElementById('lb-next');
-  const tabBtns        = document.querySelectorAll('.tab-btn');
-  const tabUrl         = document.getElementById('tab-url');
-  const tabUpload      = document.getElementById('tab-upload');
+  const gallery      = document.getElementById('gallery');
+  const emptyState   = document.getElementById('empty-state');
+  const adminTrigger = document.getElementById('admin-trigger');
+  const pwModal      = document.getElementById('pw-modal');
+  const pwInput      = document.getElementById('pw-input');
+  const pwSubmit     = document.getElementById('pw-submit');
+  const pwError      = document.getElementById('pw-error');
+  const adminPanel   = document.getElementById('admin-panel');
+  const closeAdmin   = document.getElementById('close-admin');
+  const photoUrl     = document.getElementById('photo-url');
+  const photoAltUrl  = document.getElementById('photo-alt-url');
+  const addUrlBtn    = document.getElementById('add-url-btn');
+  const photoFile    = document.getElementById('photo-file');
+  const photoAltUp   = document.getElementById('photo-alt-upload');
+  const addFileBtn   = document.getElementById('add-file-btn');
+  const thumbList    = document.getElementById('admin-thumb-list');
+  const lightbox     = document.getElementById('lightbox');
+  const lbImg        = document.getElementById('lb-img');
+  const lbCaption    = document.getElementById('lb-caption');
+  const lbClose      = document.getElementById('lb-close');
+  const lbPrev       = document.getElementById('lb-prev');
+  const lbNext       = document.getElementById('lb-next');
+  const tabBtns      = document.querySelectorAll('.tab-btn');
+  const tabUrl       = document.getElementById('tab-url');
+  const tabUpload    = document.getElementById('tab-upload');
 
-  // ── Persistence ────────────────────────────────────────
-  function load() {
-    try { photos = JSON.parse(localStorage.getItem(STORAGE_KEY)) || []; }
-    catch { photos = []; }
+  // ── API ────────────────────────────────────────────────
+  async function apiGet() {
+    const r = await fetch('/api/photos');
+    return r.json();
   }
 
-  function save() {
-    localStorage.setItem(STORAGE_KEY, JSON.stringify(photos));
+  async function apiAdd(src, alt) {
+    const r = await fetch('/api/photos', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ src, alt }),
+    });
+    return r.json();
+  }
+
+  async function apiDelete(id) {
+    await fetch(`/api/photos/${id}`, { method: 'DELETE' });
   }
 
   // ── Gallery render ─────────────────────────────────────
@@ -73,7 +81,7 @@
   // ── Admin thumbnails ───────────────────────────────────
   function renderAdminThumbs() {
     thumbList.innerHTML = '';
-    photos.forEach((p, i) => {
+    photos.forEach((p) => {
       const wrap = document.createElement('div');
       wrap.className = 'admin-thumb';
 
@@ -85,10 +93,10 @@
       del.className = 'delete-btn';
       del.innerHTML = '&#x2715;';
       del.title = 'Remove';
-      del.addEventListener('click', (e) => {
+      del.addEventListener('click', async (e) => {
         e.stopPropagation();
-        photos.splice(i, 1);
-        save();
+        await apiDelete(p.id);
+        photos = photos.filter(x => x.id !== p.id);
         renderGallery();
         renderAdminThumbs();
       });
@@ -99,7 +107,7 @@
     });
   }
 
-  // ── Hidden trigger — 5 quick clicks on copyright ──────
+  // ── Hidden trigger — 5 quick clicks on "Portfolio" title ──
   adminTrigger.addEventListener('click', () => {
     triggerClicks++;
     clearTimeout(triggerTimer);
@@ -132,10 +140,7 @@
 
   pwSubmit.addEventListener('click', checkPassword);
   pwInput.addEventListener('keydown', e => { if (e.key === 'Enter') checkPassword(); });
-
-  pwModal.addEventListener('click', e => {
-    if (e.target === pwModal) pwModal.classList.add('hidden');
-  });
+  pwModal.addEventListener('click', e => { if (e.target === pwModal) pwModal.classList.add('hidden'); });
 
   // ── Admin panel ────────────────────────────────────────
   function openAdmin() {
@@ -144,11 +149,8 @@
   }
 
   closeAdmin.addEventListener('click', () => adminPanel.classList.add('hidden'));
-  adminPanel.addEventListener('click', e => {
-    if (e.target === adminPanel) adminPanel.classList.add('hidden');
-  });
+  adminPanel.addEventListener('click', e => { if (e.target === adminPanel) adminPanel.classList.add('hidden'); });
 
-  // tabs
   tabBtns.forEach(btn => {
     btn.addEventListener('click', () => {
       tabBtns.forEach(b => b.classList.remove('active'));
@@ -160,35 +162,39 @@
   });
 
   // add by URL
-  addUrlBtn.addEventListener('click', () => {
+  addUrlBtn.addEventListener('click', async () => {
     const src = photoUrl.value.trim();
     if (!src) return;
-    photos.push({ src, alt: photoAltUrl.value.trim() });
-    save();
+    addUrlBtn.disabled = true;
+    const photo = await apiAdd(src, photoAltUrl.value.trim());
+    photos.push(photo);
     renderGallery();
     renderAdminThumbs();
     photoUrl.value = '';
     photoAltUrl.value = '';
+    addUrlBtn.disabled = false;
   });
 
-  // add by file upload (stored as data URL in localStorage)
+  // add by file upload
   addFileBtn.addEventListener('click', () => {
     const files = photoFile.files;
     if (!files.length) return;
     const alt = photoAltUp.value.trim();
+    addFileBtn.disabled = true;
     let pending = files.length;
 
     Array.from(files).forEach(file => {
       const reader = new FileReader();
-      reader.onload = e => {
-        photos.push({ src: e.target.result, alt });
+      reader.onload = async (e) => {
+        const photo = await apiAdd(e.target.result, alt);
+        photos.push(photo);
         pending--;
         if (pending === 0) {
-          save();
           renderGallery();
           renderAdminThumbs();
           photoFile.value = '';
           photoAltUp.value = '';
+          addFileBtn.disabled = false;
         }
       };
       reader.readAsDataURL(file);
@@ -212,17 +218,15 @@
   }
 
   lbClose.addEventListener('click', () => lightbox.classList.add('hidden'));
-  lightbox.addEventListener('click', e => {
-    if (e.target === lightbox) lightbox.classList.add('hidden');
-  });
+  lightbox.addEventListener('click', e => { if (e.target === lightbox) lightbox.classList.add('hidden'); });
   lbPrev.addEventListener('click', () => { if (lbIndex > 0) { lbIndex--; updateLightbox(); } });
   lbNext.addEventListener('click', () => { if (lbIndex < photos.length - 1) { lbIndex++; updateLightbox(); } });
 
   document.addEventListener('keydown', e => {
     if (!lightbox.classList.contains('hidden')) {
-      if (e.key === 'ArrowLeft')  { if (lbIndex > 0) { lbIndex--; updateLightbox(); } }
-      if (e.key === 'ArrowRight') { if (lbIndex < photos.length - 1) { lbIndex++; updateLightbox(); } }
-      if (e.key === 'Escape')     { lightbox.classList.add('hidden'); }
+      if (e.key === 'ArrowLeft' && lbIndex > 0)                    { lbIndex--; updateLightbox(); }
+      if (e.key === 'ArrowRight' && lbIndex < photos.length - 1)   { lbIndex++; updateLightbox(); }
+      if (e.key === 'Escape') lightbox.classList.add('hidden');
     }
     if (!pwModal.classList.contains('hidden') && e.key === 'Escape') {
       pwModal.classList.add('hidden');
@@ -230,6 +234,10 @@
   });
 
   // ── Init ───────────────────────────────────────────────
-  load();
-  renderGallery();
+  async function init() {
+    photos = await apiGet();
+    renderGallery();
+  }
+
+  init();
 })();
