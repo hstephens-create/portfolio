@@ -34,6 +34,29 @@
   const tabUrl       = document.getElementById('tab-url');
   const tabUpload    = document.getElementById('tab-upload');
 
+  // ── Image compression ─────────────────────────────────
+  function compressImage(file) {
+    return new Promise((resolve) => {
+      const img = new Image();
+      const url = URL.createObjectURL(file);
+      img.onload = () => {
+        const MAX = 1200;
+        let { width, height } = img;
+        if (width > MAX || height > MAX) {
+          if (width > height) { height = Math.round(height * MAX / width); width = MAX; }
+          else { width = Math.round(width * MAX / height); height = MAX; }
+        }
+        const canvas = document.createElement('canvas');
+        canvas.width = width;
+        canvas.height = height;
+        canvas.getContext('2d').drawImage(img, 0, 0, width, height);
+        URL.revokeObjectURL(url);
+        resolve(canvas.toDataURL('image/jpeg', 0.82));
+      };
+      img.src = url;
+    });
+  }
+
   // ── API ────────────────────────────────────────────────
   async function apiGet() {
     const r = await fetch('/api/photos');
@@ -175,36 +198,33 @@
     addUrlBtn.disabled = false;
   });
 
-  // auto-upload as soon as files are selected
-  photoFile.addEventListener('change', () => {
-    const files = photoFile.files;
+  // auto-upload as soon as files are selected (compressed)
+  photoFile.addEventListener('change', async () => {
+    const files = Array.from(photoFile.files);
     if (!files.length) return;
     const alt = photoAltUp.value.trim();
-    addFileBtn.textContent = `Uploading ${files.length} photo${files.length > 1 ? 's' : ''}…`;
+    addFileBtn.textContent = `Uploading 0 / ${files.length}…`;
     addFileBtn.disabled = true;
-    let pending = files.length;
+    let done = 0;
 
-    Array.from(files).forEach(file => {
-      const reader = new FileReader();
-      reader.onload = async (e) => {
-        try {
-          const photo = await apiAdd(e.target.result, alt);
-          if (photo && photo.id) photos.push(photo);
-        } catch (err) {
-          console.error('Upload failed', err);
-        }
-        pending--;
-        if (pending === 0) {
-          renderGallery();
-          renderAdminThumbs();
-          photoFile.value = '';
-          photoAltUp.value = '';
-          addFileBtn.textContent = 'Add Photo';
-          addFileBtn.disabled = false;
-        }
-      };
-      reader.readAsDataURL(file);
-    });
+    for (const file of files) {
+      try {
+        const src = await compressImage(file);
+        const photo = await apiAdd(src, alt);
+        if (photo && photo.id) photos.push(photo);
+      } catch (err) {
+        console.error('Upload failed', err);
+      }
+      done++;
+      addFileBtn.textContent = `Uploading ${done} / ${files.length}…`;
+    }
+
+    renderGallery();
+    renderAdminThumbs();
+    photoFile.value = '';
+    photoAltUp.value = '';
+    addFileBtn.textContent = 'Add Photo';
+    addFileBtn.disabled = false;
   });
 
   // ── Lightbox ───────────────────────────────────────────
