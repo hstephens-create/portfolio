@@ -1,0 +1,80 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Portfolio</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- Gallery Grid -->
+  <main id="gallery" class="gallery"></main>
+
+  <!-- Empty state -->
+  <div id="empty-state" class="empty-state hidden">
+    <p>No photos yet.</p>
+  </div>
+
+  <!-- Hidden admin trigger — copyright text in footer -->
+  <footer>
+    <span id="admin-trigger" title="">&copy; Portfolio</span>
+  </footer>
+
+  <!-- Password Modal -->
+  <div id="pw-modal" class="modal hidden">
+    <div class="modal-box">
+      <input id="pw-input" type="password" placeholder="Password" maxlength="20" autofocus />
+      <button id="pw-submit">Enter</button>
+      <p id="pw-error" class="pw-error hidden">Incorrect password.</p>
+    </div>
+  </div>
+
+  <!-- Admin Panel -->
+  <div id="admin-panel" class="admin-panel hidden">
+    <div class="admin-box">
+      <h2>Add Photos</h2>
+
+      <div class="admin-tabs">
+        <button class="tab-btn active" data-tab="url">Photo URL</button>
+        <button class="tab-btn" data-tab="upload">Upload File</button>
+      </div>
+
+      <!-- URL tab -->
+      <div id="tab-url" class="tab-content">
+        <input id="photo-url" type="text" placeholder="https://example.com/photo.jpg" />
+        <input id="photo-alt-url" type="text" placeholder="Caption (optional)" />
+        <button id="add-url-btn">Add Photo</button>
+      </div>
+
+      <!-- Upload tab -->
+      <div id="tab-upload" class="tab-content hidden">
+        <label class="file-label">
+          Choose File
+          <input id="photo-file" type="file" accept="image/*" multiple />
+        </label>
+        <input id="photo-alt-upload" type="text" placeholder="Caption (optional)" />
+        <button id="add-file-btn">Add Photo</button>
+      </div>
+
+      <hr />
+
+      <h3>Manage Photos</h3>
+      <div id="admin-thumb-list" class="admin-thumb-list"></div>
+
+      <button id="close-admin">Close</button>
+    </div>
+  </div>
+
+  <!-- Lightbox -->
+  <div id="lightbox" class="lightbox hidden">
+    <button id="lb-close">&#x2715;</button>
+    <button id="lb-prev">&#8592;</button>
+    <img id="lb-img" src="" alt="" />
+    <p id="lb-caption"></p>
+    <button id="lb-next">&#8594;</button>
+  </div>
+
+  <script src="script.js"></script>
+</body>
+</html>
