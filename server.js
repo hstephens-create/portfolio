@@ -1,6 +1,7 @@
 const express = require('express');
 const { Pool } = require('pg');
 const path = require('path');
+const fs = require('fs');
 
 const app = express();
 const pool = new Pool({
@@ -10,6 +11,19 @@ const pool = new Pool({
 
 app.use(express.json({ limit: '25mb' }));
 app.use(express.static(path.join(__dirname)));
+
+const IMAGE_EXTS = new Set(['.jpg', '.jpeg', '.png', '.gif', '.webp', '.avif']);
+
+function getFolderPhotos() {
+  const dir = path.join(__dirname, 'photos');
+  try {
+    return fs.readdirSync(dir)
+      .filter(f => IMAGE_EXTS.has(path.extname(f).toLowerCase()))
+      .map(f => ({ id: `folder::${f}`, src: `/photos/${f}`, alt: '' }));
+  } catch {
+    return [];
+  }
+}
 
 async function init() {
   await pool.query(`
@@ -22,10 +36,11 @@ async function init() {
   `);
 }
 
+// Merge folder photos (first) + DB photos
 app.get('/api/photos', async (req, res) => {
   try {
     const { rows } = await pool.query('SELECT id, src, alt FROM photos ORDER BY created_at ASC');
-    res.json(rows);
+    res.json([...getFolderPhotos(), ...rows]);
   } catch (e) {
     res.status(500).json({ error: e.message });
   }
@@ -45,6 +60,7 @@ app.post('/api/photos', async (req, res) => {
   }
 });
 
+// Only DB photos can be deleted (folder photos are files)
 app.delete('/api/photos/:id', async (req, res) => {
   try {
     await pool.query('DELETE FROM photos WHERE id = $1', [req.params.id]);

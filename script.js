@@ -112,20 +112,23 @@
       img.src = p.src;
       img.alt = p.alt || '';
 
-      const del = document.createElement('button');
-      del.className = 'delete-btn';
-      del.innerHTML = '&#x2715;';
-      del.title = 'Remove';
-      del.addEventListener('click', async (e) => {
-        e.stopPropagation();
-        await apiDelete(p.id);
-        photos = photos.filter(x => x.id !== p.id);
-        renderGallery();
-        renderAdminThumbs();
-      });
+      // folder photos (id starts with "folder::") can't be deleted from the UI
+      if (!String(p.id).startsWith('folder::')) {
+        const del = document.createElement('button');
+        del.className = 'delete-btn';
+        del.innerHTML = '&#x2715;';
+        del.title = 'Remove';
+        del.addEventListener('click', async (e) => {
+          e.stopPropagation();
+          await apiDelete(p.id);
+          photos = photos.filter(x => x.id !== p.id);
+          renderGallery();
+          renderAdminThumbs();
+        });
+        wrap.appendChild(del);
+      }
 
       wrap.appendChild(img);
-      wrap.appendChild(del);
       thumbList.appendChild(wrap);
     });
   }
