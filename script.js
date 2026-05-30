@@ -175,25 +175,31 @@
     addUrlBtn.disabled = false;
   });
 
-  // add by file upload
-  addFileBtn.addEventListener('click', () => {
+  // auto-upload as soon as files are selected
+  photoFile.addEventListener('change', () => {
     const files = photoFile.files;
     if (!files.length) return;
     const alt = photoAltUp.value.trim();
+    addFileBtn.textContent = `Uploading ${files.length} photo${files.length > 1 ? 's' : ''}…`;
     addFileBtn.disabled = true;
     let pending = files.length;
 
     Array.from(files).forEach(file => {
       const reader = new FileReader();
       reader.onload = async (e) => {
-        const photo = await apiAdd(e.target.result, alt);
-        photos.push(photo);
+        try {
+          const photo = await apiAdd(e.target.result, alt);
+          if (photo && photo.id) photos.push(photo);
+        } catch (err) {
+          console.error('Upload failed', err);
+        }
         pending--;
         if (pending === 0) {
           renderGallery();
           renderAdminThumbs();
           photoFile.value = '';
           photoAltUp.value = '';
+          addFileBtn.textContent = 'Add Photo';
           addFileBtn.disabled = false;
         }
       };
