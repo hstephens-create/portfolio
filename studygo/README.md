@@ -37,3 +37,18 @@ read it. To enable that:
 Without a key, the upload button will tell you it's not configured and you
 can just add assignments manually instead — the planning and resources
 features work the same either way.
+
+## Installing on iPad
+
+StudyGO is a installable web app (PWA) — no App Store needed.
+
+1. Deploy it somewhere reachable from your iPad over HTTPS (Render, Railway,
+   Vercel, etc. can all run a small Express app like this one). HTTPS is
+   required for the offline/home-screen support to fully kick in.
+2. On the iPad, open that URL in **Safari** (it has to be Safari, not Chrome).
+3. Tap the **Share** icon, then **Add to Home Screen**.
+
+That gives you a StudyGO icon that opens full-screen, without Safari's
+address bar, and keeps working offline once you've loaded it at least once
+(everything except the screenshot-reading feature, which needs a live
+connection to the server).
