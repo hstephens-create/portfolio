@@ -161,9 +161,23 @@
         const chunk = Math.min(remaining, MAX_WORK_BLOCK);
 
         if (elapsed + chunk > SESSION_MINUTES) {
-          // doesn't fit — carry the rest of this assignment over
-          if (firstChunk) carryover.push(a);
-          else carryover.push({ ...a, title: `${a.title} (remainder)`, minutes: remaining });
+          // full chunk doesn't fit — schedule whatever session time is left, then carry the true leftover
+          const fits = SESSION_MINUTES - elapsed;
+          if (fits > 0) {
+            blocks.push({
+              type: 'work',
+              title: firstChunk ? a.title : `${a.title} (cont.)`,
+              subject: a.subject,
+              start: elapsed,
+              duration: fits,
+            });
+            elapsed += fits;
+            remaining -= fits;
+            firstChunk = false;
+          }
+          if (remaining > 0) {
+            carryover.push(firstChunk ? a : { ...a, title: `${a.title} (remainder)`, minutes: remaining });
+          }
           remaining = 0;
           break;
         }
