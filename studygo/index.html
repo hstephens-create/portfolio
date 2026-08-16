@@ -1,0 +1,64 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>StudyGO</title>
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <header class="topbar">
+    <h1>StudyGO</h1>
+    <p class="tagline">See what's due. Plan your two hours. Go.</p>
+  </header>
+
+  <main class="layout">
+
+    <!-- Step 1: get assignments in -->
+    <section class="card" id="intake">
+      <h2>1. What's due</h2>
+
+      <div class="upload-row">
+        <label class="file-label">
+          Upload a screenshot of your assignments page
+          <input id="screenshot-input" type="file" accept="image/*" hidden />
+        </label>
+        <span id="upload-status" class="muted"></span>
+      </div>
+
+      <div class="manual-add">
+        <input id="a-title" type="text" placeholder="Assignment title" />
+        <input id="a-subject" type="text" placeholder="Class / subject" />
+        <input id="a-due" type="date" />
+        <input id="a-minutes" type="number" min="5" max="120" step="5" placeholder="Est. minutes" />
+        <button id="add-assignment-btn">Add</button>
+      </div>
+
+      <ul id="assignment-list" class="assignment-list"></ul>
+      <p id="empty-msg" class="muted">Nothing added yet — upload a screenshot or add one above.</p>
+
+      <button id="plan-btn" class="primary" disabled>Plan my 2 hours</button>
+    </section>
+
+    <!-- Step 2: the plan -->
+    <section class="card hidden" id="plan-section">
+      <h2>2. Your 2-hour plan</h2>
+      <div id="timeline" class="timeline"></div>
+      <div id="carryover" class="carryover hidden">
+        <h3>Didn't fit this session</h3>
+        <ul id="carryover-list"></ul>
+      </div>
+    </section>
+
+    <!-- Step 3: resources -->
+    <section class="card hidden" id="resources-section">
+      <h2>3. Resources</h2>
+      <div id="resources-list"></div>
+    </section>
+
+  </main>
+
+  <script src="app.js"></script>
+</body>
+</html>
