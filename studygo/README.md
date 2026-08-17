@@ -40,13 +40,34 @@ features work the same either way.
 
 ## Installing on iPad
 
-StudyGO is a installable web app (PWA) — no App Store needed.
+StudyGO is an installable web app (PWA) — no App Store, no Xcode, no Mac
+needed. Two steps: deploy it somewhere with HTTPS, then add it to your
+Home Screen.
 
-1. Deploy it somewhere reachable from your iPad over HTTPS (Render, Railway,
-   Vercel, etc. can all run a small Express app like this one). HTTPS is
-   required for the offline/home-screen support to fully kick in.
-2. On the iPad, open that URL in **Safari** (it has to be Safari, not Chrome).
-3. Tap the **Share** icon, then **Add to Home Screen**.
+### 1. Deploy (free, via Render)
+
+This repo includes a `render.yaml` at the root, so Render can deploy it
+automatically:
+
+1. Go to https://dashboard.render.com and sign in with your GitHub account.
+2. Click **New +** → **Blueprint**.
+3. Pick this repo (`portfolio`) and the branch StudyGO is on.
+4. Render reads `render.yaml` and sets up the `studygo` service for you —
+   just click **Apply**.
+5. (Optional) In the service's **Environment** tab, add `ANTHROPIC_API_KEY`
+   if you want the screenshot-reading feature. Skip it and manual entry
+   still works fine.
+6. Wait for the build to finish. You'll get a URL like
+   `https://studygo.onrender.com`.
+
+Free-tier services spin down after 15 minutes idle — the first load after
+a quiet spell takes ~30–50 seconds to wake back up. That's normal.
+
+### 2. Add to Home Screen
+
+1. On the iPad, open your Render URL in **Safari** (must be Safari, not
+   Chrome).
+2. Tap the **Share** icon, then **Add to Home Screen**.
 
 That gives you a StudyGO icon that opens full-screen, without Safari's
 address bar, and keeps working offline once you've loaded it at least once
